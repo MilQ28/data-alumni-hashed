@@ -1,0 +1,87 @@
+<?php
+// navbar.php - included on every page
+$current = basename($_SERVER['PHP_SELF']);
+?>
+<nav class="navbar">
+  <div class="nav-brand">
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="48" rx="12" fill="#1a3a5c"/>
+      <path d="M24 10L34 16V28L24 34L14 28V16L24 10Z" stroke="white" stroke-width="2" fill="none"/>
+      <circle cx="24" cy="22" r="5" fill="white" fill-opacity="0.9"/>
+      <path d="M15 30C17 27 20 25 24 25C28 25 31 27 33 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <span>Alumni SMK</span>
+  </div>
+
+  <div class="nav-links">
+    <?php if (isAdmin()): ?>
+    <a href="dashboard_admin.php" class="nav-link <?= $current === 'dashboard_admin.php' ? 'active' : '' ?>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      Dashboard
+    </a>
+    <a href="users.php" class="nav-link <?= $current === 'users.php' ? 'active' : '' ?>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      Pengguna
+    </a>
+    <a href="tambah_user.php" class="nav-link <?= $current === 'tambah_user.php' ? 'active' : '' ?>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+      </svg>
+      Tambah Alumni
+    </a>
+    <a href="tambah.php" class="nav-link <?= $current === 'tambah.php' ? 'active' : '' ?>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+      </svg>
+      Tambah Data
+    </a>
+    <?php else: ?>
+    <a href="dashboard_user.php" class="nav-link <?= $current === 'dashboard_user.php' ? 'active' : '' ?>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      Beranda
+    </a>
+    <?php endif; ?>
+  </div>
+
+  <div class="nav-user">
+    <a href="profile.php" class="nav-profile <?= $current === 'profile.php' ? 'active' : '' ?>">
+      <?php
+      $foto = '';
+      if (isset($_SESSION['id_alumni'])) {
+          global $pdo;
+          $s = $pdo->prepare("SELECT foto_profil, nama FROM alumni WHERE id_alumni = ?");
+          $s->execute([$_SESSION['id_alumni']]);
+          $row = $s->fetch();
+          $foto = $row['foto_profil'] ?? '';
+          $namaAlumni = $row['nama'] ?? $_SESSION['username'];
+      } else {
+          $namaAlumni = $_SESSION['username'];
+      }
+      if ($foto && file_exists("uploads/foto_profil/$foto")):
+      ?>
+      <img src="uploads/foto_profil/<?= htmlspecialchars($foto) ?>" alt="Foto Profil" class="avatar-img">
+      <?php else: ?>
+      <div class="avatar-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <?php endif; ?>
+      <div class="nav-user-info">
+        <span class="nav-username"><?= htmlspecialchars($namaAlumni) ?></span>
+        <span class="nav-role"><?= ucfirst($_SESSION['role']) ?></span>
+      </div>
+    </a>
+    <a href="logout.php" class="nav-logout" title="Logout">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+    </a>
+  </div>
+</nav>
