@@ -19,9 +19,8 @@ $error   = '';
 $success = '';
 
 $jurusan_list = [
-    'Rekayasa Perangkat Lunak','Teknik Komputer dan Jaringan','Akuntansi',
-    'Administrasi Perkantoran','Teknik Otomotif','Teknik Elektronika',
-    'Multimedia','Bisnis Daring dan Pemasaran','Teknik Instalasi Tenaga Listrik','Kuliner',
+    'Rekayasa Perangkat Lunak','Teknik Komputer dan Jaringan','Teknik Jaringan Aksen dan Telekomunikasi',
+    'Animasi',
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
