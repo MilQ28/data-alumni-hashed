@@ -12,3 +12,11 @@ try {
     die(json_encode(['error' => 'Koneksi database gagal: ' . $e->getMessage()]));
 }
 ?>
+
+// <?php
+
+// $conn = mysqli_connect("localhost", "root", "", "db_alumni");
+
+// if (!$conn) {
+//     die("Koneksi gagal");
+// }
