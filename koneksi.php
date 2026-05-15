@@ -1,3 +1,4 @@
+// #1
 <?php
 $host     = 'localhost';
 $dbname   = 'db_alumni';
@@ -13,10 +14,12 @@ try {
 }
 ?>
 
-// <?php
+// #2
+<?php
 
-// $conn = mysqli_connect("localhost", "root", "", "db_alumni");
+$conn = mysqli_connect("localhost", "root", "", "db_alumni");
 
-// if (!$conn) {
-//     die("Koneksi gagal");
-// }
+if (!$conn) {
+    die("Koneksi gagal");
+}
+
