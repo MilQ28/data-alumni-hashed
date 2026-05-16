@@ -33,15 +33,6 @@
   --success:      #2e7d32;
   --success-bg:   #f0fff4;
 
-  /* === BACKGROUND FOTO SEKOLAH === */
-  /* Ubah path file di sini jika ingin ganti foto */
-  --bg-image:     url('../assets/bg-sekolah.jpg');
-
-  /* === OVERLAY GELAP DI ATAS FOTO ===
-     Angka terakhir = tingkat kegelapan: 0.0 = terang, 1.0 = hitam penuh
-     Disarankan: 0.50 sampai 0.65 agar teks tetap terbaca */
-  --overlay:      rgba(0, 0, 0, 0.58);
-
   /* === UKURAN & RADIUS === */
   --radius:       12px;
   --shadow:       0 8px 40px rgba(0,0,0,.18);
@@ -72,26 +63,15 @@ body {
 .auth-bg {
   display: flex;
   min-height: 100vh;
-  /* Foto sekolah sebagai background fullscreen */
-  background-image: var(--bg-image);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  /* Background kini dihandle oleh bg-slideshow.js secara otomatis */
   position: relative;
 }
 
-/* Overlay gelap di atas foto agar teks terbaca */
-.auth-bg::before {
-  content: '';
-  position: absolute;
-  inset: 0; /* sama dengan top:0 right:0 bottom:0 left:0 */
-  background: var(--overlay);
-  z-index: 0;
-}
+/* Overlay gelap juga sudah diatur oleh bg-slideshow.js */
 
 /* Sama untuk halaman register */
 .register-bg {
-  background-image: var(--bg-image);
+  /* Tidak perlu style tambahan */
 }
 
 /* Panel kiri: info sekolah, logo, tagline */

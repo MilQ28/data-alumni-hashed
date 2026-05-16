@@ -402,5 +402,6 @@ function toggleForm() {
 // Initialize form state
 toggleForm();
 </script>
+<script src="assets/bg-slideshow.js"></script>
 </body>
 </html>

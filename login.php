@@ -138,5 +138,6 @@ function togglePassword() {
   pw.type = pw.type === 'password' ? 'text' : 'password';
 }
 </script>
+<script src="assets/bg-slideshow.js"></script>
 </body>
 </html>

@@ -293,5 +293,6 @@ $alumniBelumTerdaftar = mysqli_fetch_all($resDataBelum, MYSQLI_ASSOC);
     </div>
   </div>
 </div>
+<script src="assets/bg-slideshow-dashboard.js"></script>
 </body>
 </html>

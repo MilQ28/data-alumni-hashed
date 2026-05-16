@@ -179,5 +179,6 @@ while ($row = mysqli_fetch_assoc($res2)) {
     <?php endif; ?>
   </div>
 </div>
+<script src="assets/bg-slideshow-dashboard.js"></script>
 </body>
 </html>
