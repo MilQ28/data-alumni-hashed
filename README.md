@@ -69,11 +69,15 @@ chmod 775 uploads/foto_profil/
 ```
 
 ### 5. Jalankan
-Letakkan folder di `htdocs` (XAMPP) atau `www` (Laragon), lalu buka:
+Letakkan folder di `htdocs` (XAMPP) atau `www` (Laragon), lalu jalankan:
 ```
 git clone https://github.com/MilQ28/data-alumni-hashed.git
 cd data-alumni-hashed
 php -S localhost:8000 (jika di luar folder htdocs)
+
+```
+lalu buka browser
+```
 http://localhost/data-alumni-hashed/
 ```
 
@@ -86,8 +90,6 @@ http://localhost/data-alumni-hashed/
 | admin       | admin      | Admin      |
 | superadmin  | superadmin | Superadmin |
 | syamil      | syamil     | User       |
-
-> **Penting:** Ganti password setelah pertama kali login!
 
 ---
 
