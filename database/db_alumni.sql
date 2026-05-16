@@ -47,7 +47,8 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`user_id`, `username`, `password`, `role`, `status`) VALUES
 (1, 'admin',      '$2y$10$8TQ6R1e3mgFzSI1uG/u2Yuvkh/KBimqODiJEiNFNbIs9eqvxbQ.kG', 'admin',      'approved'),
-(2, 'superadmin', '$2y$10$4yK.E.rMAoAVzbFVh5TqOukRJod8UOHOQfY.Ts2262Aa2gK9Ao6DG', 'superadmin', 'approved');
+(2, 'superadmin', '$2y$10$4yK.E.rMAoAVzbFVh5TqOukRJod8UOHOQfY.Ts2262Aa2gK9Ao6DG', 'superadmin', 'approved'),
+(3, 'syamil', '$2y$10$jys/nLcSBEbUNK27uHHAsuNx5cqM62HiKKhtFa.Nua39wEJ1/H7IK', 'user', 'approved');
 
 -- --------------------------------------------------------
 -- Contoh data alumni
