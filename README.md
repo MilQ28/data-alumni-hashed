@@ -1,6 +1,7 @@
-# Sistem Manajemen Data Alumni SMK
+# Portal Alumni SMK Telkom Lampung
 
-Website manajemen data alumni SMK berbasis PHP & MySQL.
+Website manajemen data portal resmi alumni SMK Telkom Lampung berbasis PHP & MySQLi.
+Dilengkapi dengan tema warna sekolah, slideshow background dinamis, dan komentar edukatif untuk pembelajaran pemula.
 
 ---
 
@@ -10,18 +11,22 @@ Website manajemen data alumni SMK berbasis PHP & MySQL.
 MANAJEMEN-DATA-ALUMNI/
 ├── database/
 │   └── db_alumni.sql          # File SQL untuk import database
+├── assets/
+│   ├── bg-sekolah.jpg         # Foto background utama
+│   ├── bg-slideshow.js        # Script slideshow login/register
+│   └── bg-slideshow-dashboard.js # Script slideshow dashboard
 ├── uploads/
 │   └── foto_profil/           # Folder penyimpanan foto profil
 ├── style/
-│   ├── index.css              # CSS halaman login & register
-│   └── dashboard.css          # CSS halaman dashboard & dalam
+│   ├── index.css              # CSS halaman login & register (tema SMK Telkom)
+│   └── dashboard.css          # CSS halaman dashboard (tema SMK Telkom)
 ├── index.php                  # Redirect otomatis (login/dashboard)
 ├── login.php                  # Halaman masuk
 ├── register.php               # Halaman daftar alumni
 ├── logout.php                 # Proses logout
-├── auth.php                   # Helper autentikasi
-├── koneksi.php                # Koneksi database PDO
-├── navbar.php                 # Komponen navbar (include)
+├── auth.php                   # Helper autentikasi (berkomentar)
+├── koneksi.php                # Koneksi database MySQLi Procedural (berkomentar)
+├── navbar.php                 # Komponen navbar dengan Logo Sekolah
 ├── dashboard_admin.php        # Dashboard admin/superadmin
 ├── dashboard_user.php         # Dashboard user alumni
 ├── profile.php                # Halaman profil & edit
@@ -113,12 +118,15 @@ http://localhost/MANAJEMEN-DATA-ALUMNI/
 - ✅ Edit profil sendiri (user hanya data miliknya)
 - ✅ Pencarian & filter data alumni
 - ✅ 3 level akses: user, admin, superadmin
-- ✅ Keamanan: password di-hash (bcrypt), prepared statements
+- ✅ Keamanan: password di-hash (bcrypt), MySQLi prepared statements
+- ✅ Desain Modern & Responsif (Tema Resmi SMK Telkom Lampung)
+- ✅ Komentar Edukatif pada File PHP untuk Panduan Belajar Pemula
 
 ---
 
-## Catatan Keamanan
-- Password di-hash menggunakan `password_hash()` PHP (bcrypt)
-- Semua query menggunakan PDO Prepared Statements
-- Session-based authentication
-- Input di-sanitasi dengan `htmlspecialchars()`
+## Catatan Keamanan & Edukasi
+- File utama `.php` telah dilengkapi komentar penjelasan (Bahasa Indonesia) untuk memudahkan pemula mempelajari logika sistem.
+- Password di-hash menggunakan `password_hash()` PHP (bcrypt).
+- Semua query database menggunakan **MySQLi Procedural Prepared Statements** untuk mencegah SQL Injection.
+- Session-based authentication untuk pengelolaan login.
+- Input disanitasi menggunakan `htmlspecialchars()`.
