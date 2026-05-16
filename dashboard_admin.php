@@ -12,37 +12,50 @@
 session_start();
 require 'auth.php';
 require 'koneksi.php';
-requireAdmin();
+requireAdmin(); // Pastikan hanya admin yang bisa buka halaman ini
 include 'navbar.php';
 
-// Stats
-$res = mysqli_query($conn, "SELECT COUNT(*) FROM alumni");
-$totalAlumni = mysqli_fetch_row($res)[0];
+// ==============================================================================
+// MENGAMBIL DATA STATISTIK UNTUK DASHBOARD
+// ==============================================================================
 
+// 1. Hitung total semua alumni yang ada di database
+$res = mysqli_query($conn, "SELECT COUNT(*) FROM alumni");
+$totalAlumni = mysqli_fetch_row($res)[0]; // Ambil angka hasil hitungan
+
+// 2. Hitung total akun dengan role 'user' (alumni biasa)
 $res = mysqli_query($conn, "SELECT COUNT(*) FROM users WHERE role='user'");
 $totalUsers = mysqli_fetch_row($res)[0];
 
+// 3. Hitung akun yang statusnya masih 'pending' (menunggu persetujuan admin)
 $res = mysqli_query($conn, "SELECT COUNT(*) FROM users WHERE status='pending'");
 $pending = mysqli_fetch_row($res)[0];
 
+// 4. Ambil statistik 5 jurusan dengan alumni terbanyak
+// GROUP BY jurusan = kelompokkan berdasarkan jurusan
+// ORDER BY total DESC = urutkan dari yang terbanyak
 $res = mysqli_query($conn, "SELECT jurusan, COUNT(*) as total FROM alumni GROUP BY jurusan ORDER BY total DESC LIMIT 5");
 $jurusanStat = mysqli_fetch_all($res, MYSQLI_ASSOC);
 
+// 5. Ambil statistik alumni per angkatan (6 angkatan terakhir)
 $res = mysqli_query($conn, "SELECT angkatan, COUNT(*) as total FROM alumni GROUP BY angkatan ORDER BY angkatan DESC LIMIT 6");
 $angkatanStat = mysqli_fetch_all($res, MYSQLI_ASSOC);
 
-// Recent alumni
+// 6. Ambil 8 data alumni yang paling baru ditambahkan
 $res = mysqli_query($conn, "SELECT * FROM alumni ORDER BY created_at DESC LIMIT 8");
 $recentAlumni = mysqli_fetch_all($res, MYSQLI_ASSOC);
 
-// Pending users
+// 7. Ambil data akun yang masih pending untuk ditampilkan di tabel approval
+// LEFT JOIN menghubungkan tabel users dan alumni berdasarkan id_alumni
 $res = mysqli_query($conn, "SELECT u.*, a.nama, a.nis, a.jurusan, a.angkatan FROM users u LEFT JOIN alumni a ON u.id_alumni=a.id_alumni WHERE u.status='pending' ORDER BY u.created_at DESC");
 $pendingUsers = mysqli_fetch_all($res, MYSQLI_ASSOC);
 
-// Alumni Belum Terdaftar
+// 8. Hitung berapa banyak data alumni yang BELUM punya akun
+// Kondisi u.id_alumni IS NULL berarti data alumni tersebut tidak ditemukan di tabel users
 $resBelum = mysqli_query($conn, "SELECT COUNT(*) FROM alumni a LEFT JOIN users u ON a.id_alumni = u.id_alumni WHERE u.id_alumni IS NULL");
 $totalBelumTerdaftar = mysqli_fetch_row($resBelum)[0];
 
+// 9. Ambil 5 data alumni yang belum punya akun
 $resDataBelum = mysqli_query($conn, "SELECT a.id_alumni, a.nis, a.nama, a.jurusan, a.angkatan FROM alumni a LEFT JOIN users u ON a.id_alumni = u.id_alumni WHERE u.id_alumni IS NULL ORDER BY a.nama ASC LIMIT 5");
 $alumniBelumTerdaftar = mysqli_fetch_all($resDataBelum, MYSQLI_ASSOC);
 ?>

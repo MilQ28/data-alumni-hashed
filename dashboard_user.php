@@ -12,13 +12,20 @@
 session_start();
 require 'auth.php';
 require 'koneksi.php';
-requireLogin();
+requireLogin(); // Wajib login untuk akses halaman ini
+
+// Jika yang login adalah admin, lempar ke dashboard admin
 if (isAdmin()) { header('Location: dashboard_admin.php'); exit; }
 include 'navbar.php';
 
-$id_alumni = $_SESSION['id_alumni'];
+// ==============================================================================
+// 1. MENGAMBIL DATA PROFIL PENGGUNA (ALUMNI) SAAT INI
+// ==============================================================================
+$id_alumni = $_SESSION['id_alumni']; // Ambil ID alumni dari session saat login
 $myData = null;
+
 if ($id_alumni) {
+    // Ambil data detail alumni dari database berdasarkan ID
     $stmt = mysqli_prepare($conn, "SELECT * FROM alumni WHERE id_alumni = ?");
     mysqli_stmt_bind_param($stmt, 'i', $id_alumni);
     mysqli_stmt_execute($stmt);
@@ -27,35 +34,46 @@ if ($id_alumni) {
     mysqli_stmt_close($stmt);
 }
 
-// Semua alumni (bisa dilihat user)
-$search  = trim($_GET['search'] ?? '');
-$jurusan = trim($_GET['jurusan'] ?? '');
-$where   = [];
-$params  = [];
-$types   = '';
+// ==============================================================================
+// 2. FITUR PENCARIAN & FILTER DAFTAR ALUMNI
+// ==============================================================================
+$search  = trim($_GET['search'] ?? '');   // Kata kunci pencarian
+$jurusan = trim($_GET['jurusan'] ?? ''); // Filter berdasarkan jurusan
 
+$where   = []; // Array untuk menyimpan kondisi query (WHERE)
+$params  = []; // Array untuk menyimpan nilai parameter pencarian
+$types   = ''; // Tipe data parameter (s = string)
+
+// Jika user mengetikkan sesuatu di kotak pencarian
 if ($search) {
     $where[] = "(nama LIKE ? OR nis LIKE ? OR pekerjaan LIKE ?)";
-    $s = "%$search%";
+    $s = "%$search%"; // Tambahkan % agar bisa mencari kata yang mengandung huruf tersebut
     $params = array_merge($params, [$s, $s, $s]);
-    $types .= 'sss';
+    $types .= 'sss'; // Tiga parameter string
 }
+
+// Jika user memilih jurusan dari dropdown
 if ($jurusan) {
     $where[] = "jurusan = ?";
     $params[] = $jurusan;
-    $types .= 's';
+    $types .= 's'; // Satu parameter string
 }
 
+// 3. Susun query SQL akhir
 $sql = "SELECT * FROM alumni" . ($where ? " WHERE " . implode(" AND ", $where) : "") . " ORDER BY created_at DESC";
 $stmt = mysqli_prepare($conn, $sql);
+
+// Jika ada parameter pencarian, pasangkan parameternya ke query
 if ($params) {
     mysqli_stmt_bind_param($stmt, $types, ...$params);
 }
+
 mysqli_stmt_execute($stmt);
 $res = mysqli_stmt_get_result($stmt);
-$alumniList = mysqli_fetch_all($res, MYSQLI_ASSOC);
+$alumniList = mysqli_fetch_all($res, MYSQLI_ASSOC); // Ambil semua hasil dalam bentuk array
 mysqli_stmt_close($stmt);
 
+// 4. Ambil daftar semua jurusan yang ada untuk diisi ke dalam dropdown filter
 $res2 = mysqli_query($conn, "SELECT DISTINCT jurusan FROM alumni ORDER BY jurusan");
 $jurusanList = [];
 while ($row = mysqli_fetch_assoc($res2)) {

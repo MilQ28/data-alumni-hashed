@@ -9,47 +9,70 @@
 </head>
 <body>
 <?php
+// Memulai sesi agar kita bisa menyimpan data login pengguna
 session_start();
+
+// 1. CEK STATUS LOGIN
+// Jika pengguna sudah login (ada session 'user_id'), langsung pindahkan ke halaman dashboard
 if (isset($_SESSION['user_id'])) {
     $role = $_SESSION['role'];
+    // Jika role-nya user, pergi ke dashboard_user, jika admin ke dashboard_admin
     header('Location: ' . ($role === 'user' ? 'dashboard_user.php' : 'dashboard_admin.php'));
     exit;
 }
 
+// 2. KONEKSI KE DATABASE
 require 'koneksi.php';
-$conn = mysqli_connect($host, $username, $password, $dbname);
-$error = '';
+$error = ''; // Variabel untuk menyimpan pesan error jika login gagal
 
+// 3. PROSES FORM SAAT TOMBOL SUBMIT DITEKAN
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Ambil data username dan password dari form
+    // trim() digunakan untuk menghapus spasi kosong di awal/akhir input
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');
 
+    // Pastikan username dan password tidak kosong
     if ($username && $password) {
+        // 4. MENCARI PENGGUNA DI DATABASE
+        // Menggunakan "Prepared Statement" (?) untuk mencegah serangan SQL Injection
         $stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE username = ?");
-        mysqli_stmt_bind_param($stmt, 's', $username);
+        mysqli_stmt_bind_param($stmt, 's', $username); // 's' berarti string
         mysqli_stmt_execute($stmt);
+        
+        // Ambil hasil pencariannya
         $result = mysqli_stmt_get_result($stmt);
-        $user = mysqli_fetch_assoc($result);
+        $user = mysqli_fetch_assoc($result); // Ubah hasil menjadi array asosiatif
         mysqli_stmt_close($stmt);
 
+        // 5. PENGECEKAN PASSWORD & STATUS AKUN
+        // Jika username ditemukan ($user) DAN password yang diketik cocok dengan password di database
+        // password_verify digunakan karena password di database dienkripsi (di-hash)
         if ($user && password_verify($password, $user['password'])) {
-        // if ($password == ($user['password'])) {
+            
+            // Cek apakah akunnya disetujui, ditunda, atau ditolak
             if ($user['status'] === 'pending') {
                 $error = 'Akun Anda sedang menunggu verifikasi admin.';
             } elseif ($user['status'] === 'rejected') {
                 $error = 'Akun Anda ditolak. Hubungi administrator.';
             } else {
+                // 6. LOGIN BERHASIL
+                // Simpan data penting ke dalam Session
                 $_SESSION['user_id']  = $user['user_id'];
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['role']     = $user['role'];
                 $_SESSION['id_alumni']= $user['id_alumni'];
+                
+                // Pindahkan ke dashboard sesuai jabatannya (role)
                 header('Location: ' . ($user['role'] === 'user' ? 'dashboard_user.php' : 'dashboard_admin.php'));
                 exit;
             }
         } else {
+            // Jika username tidak ada atau password salah
             $error = 'Username atau password salah.';
         }
     } else {
+        // Jika form belum diisi lengkap
         $error = 'Harap isi semua kolom.';
     }
 }

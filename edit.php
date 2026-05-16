@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -12,20 +12,26 @@
 session_start();
 require 'auth.php';
 require 'koneksi.php';
-requireAdmin();
+requireAdmin(); // Wajib admin
 include 'navbar.php';
 
-$id = (int)($_GET['id'] ?? 0);
+// ==============================================================================
+// 1. MENGAMBIL DATA ALUMNI YANG MAU DI-EDIT
+// ==============================================================================
+// Ambil ID dari URL (contoh: edit.php?id=5)
+$id = (int)($_GET['id'] ?? 0); 
+
 $stmt = mysqli_prepare($conn, "SELECT * FROM alumni WHERE id_alumni=?");
-mysqli_stmt_bind_param($stmt, 'i', $id);
+mysqli_stmt_bind_param($stmt, 'i', $id); // 'i' = integer (angka)
 mysqli_stmt_execute($stmt);
 $res = mysqli_stmt_get_result($stmt);
-$alumni = mysqli_fetch_assoc($res);
+$alumni = mysqli_fetch_assoc($res); // Simpan data di variabel $alumni
 mysqli_stmt_close($stmt);
 
+// Jika data tidak ada di database (mungkin id salah)
 if (!$alumni) {
     echo '<div class="page-wrapper"><div class="alert alert-error">Data tidak ditemukan.</div></div>';
-    exit;
+    exit; // Hentikan eksekusi
 }
 
 $error = $success = '';
@@ -36,7 +42,11 @@ $jurusan_list = [
   'Animasi',
 ];
 
+// ==============================================================================
+// 2. PROSES UPDATE DATA SAAT FORM DI-SUBMIT
+// ==============================================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Ambil data baru dari form
     $nis        = trim($_POST['nis']        ?? '');
     $nama       = trim($_POST['nama']       ?? '');
     $angkatan   = trim($_POST['angkatan']   ?? '');
@@ -47,9 +57,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $perusahaan = trim($_POST['perusahaan'] ?? '');
     $alamat     = trim($_POST['alamat']     ?? '');
 
+    // Validasi data wajib
     if (!$nis || !$nama || !$angkatan || !$jurusan || !$email || !$no_hp) {
         $error = 'Field wajib tidak boleh kosong.';
     } else {
+        // Cek apakah email yang baru dimasukkan sudah dipakai orang lain
+        // id_alumni != ? artinya "cek email ini di data lain selain milik saya sendiri"
         $s = mysqli_prepare($conn, "SELECT id_alumni FROM alumni WHERE email=? AND id_alumni!=?");
         mysqli_stmt_bind_param($s, 'si', $email, $id);
         mysqli_stmt_execute($s);
@@ -57,14 +70,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_close($s);
 
         if (mysqli_fetch_assoc($sres)) {
-            $error = 'Email sudah digunakan.';
+            $error = 'Email sudah digunakan oleh alumni lain.';
         } else {
+            // Jika email aman, lakukan UPDATE ke database
             $stmt = mysqli_prepare($conn, "UPDATE alumni SET nis=?,nama=?,angkatan=?,jurusan=?,email=?,no_hp=?,pekerjaan=?,perusahaan=?,alamat=? WHERE id_alumni=?");
+            // s = string, i = integer
             mysqli_stmt_bind_param($stmt, 'ssissssssi', $nis, $nama, $angkatan, $jurusan, $email, $no_hp, $pekerjaan, $perusahaan, $alamat, $id);
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
             $success = 'Data berhasil diperbarui.';
 
+            // Ambil ulang data terbaru dari database untuk ditampilkan di form (agar ter-refresh)
             $stmt = mysqli_prepare($conn, "SELECT * FROM alumni WHERE id_alumni=?");
             mysqli_stmt_bind_param($stmt, 'i', $id);
             mysqli_stmt_execute($stmt);

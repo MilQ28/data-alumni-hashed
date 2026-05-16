@@ -24,12 +24,17 @@ $jurusan_list = [
   'Teknik Jaringan Akses dan Telekomunikasi',
   'Animasi',
 ];
+// ==============================================================================
+// PROSES PENDAFTARAN ALUMNI
+// ==============================================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $jenis_daftar = $_POST['jenis_daftar'] ?? 'baru';
+    // 1. Ambil data dasar akun
+    $jenis_daftar = $_POST['jenis_daftar'] ?? 'baru'; // Cek apakah dia alumni baru atau sudah ada datanya
     $username   = trim($_POST['username']   ?? '');
     $password   = trim($_POST['password']   ?? '');
     $confirm_pw = trim($_POST['confirm_pw'] ?? '');
 
+    // 2. Validasi Input Dasar
     if (!$username || !$password) {
         $error = 'Username dan password wajib diisi.';
     } elseif ($password !== $confirm_pw) {
@@ -37,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (strlen($password) < 6) {
         $error = 'Password minimal 6 karakter.';
     } else {
-        // Cek username sudah dipakai
+        // 3. Cek apakah username sudah ada yang pakai
         $stmt = mysqli_prepare($conn, "SELECT user_id FROM users WHERE username = ?");
         mysqli_stmt_bind_param($stmt, 's', $username);
         mysqli_stmt_execute($stmt);
@@ -47,12 +52,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (mysqli_fetch_assoc($res)) {
             $error = 'Username sudah digunakan.';
         } else {
+            // 4. Proses berdasarkan jenis pendaftaran
             if ($jenis_daftar === 'lama') {
+                // JIKA ALUMNI LAMA (Datanya sudah diinputkan oleh Admin sebelumnya)
                 $id_alumni_pilihan = $_POST['id_alumni_pilihan'] ?? '';
                 if (!$id_alumni_pilihan) {
                     $error = 'Silakan pilih nama Anda dari daftar alumni.';
                 } else {
-                    // Pastikan id_alumni valid dan belum punya akun
+                    // Pastikan nama yang dipilih benar-benar valid dan belum punya akun
                     $stmtCek = mysqli_prepare($conn, "SELECT id_alumni FROM alumni WHERE id_alumni = ? AND id_alumni NOT IN (SELECT id_alumni FROM users WHERE id_alumni IS NOT NULL)");
                     mysqli_stmt_bind_param($stmtCek, 'i', $id_alumni_pilihan);
                     mysqli_stmt_execute($stmtCek);
@@ -62,12 +69,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     mysqli_stmt_close($stmtCek);
 
+                    // Jika lolos pengecekan, buatkan akun user-nya
                     if (!$error) {
-                        $hashed = password_hash($password, PASSWORD_DEFAULT);
+                        $hashed = password_hash($password, PASSWORD_DEFAULT); // Enkripsi password
                         $stmt2 = mysqli_prepare($conn, "INSERT INTO users (username, password, role, id_alumni, status) VALUES (?,?,'user',?,'pending')");
                         mysqli_stmt_bind_param($stmt2, 'ssi', $username, $hashed, $id_alumni_pilihan);
                         if (mysqli_stmt_execute($stmt2)) {
-                            $success = true;
+                            $success = true; // Berhasil!
                         } else {
                             $error = 'Terjadi kesalahan saat membuat akun. Silakan coba lagi.';
                         }
@@ -75,7 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
             } else {
-                // Logika lama untuk alumni baru
+                // JIKA ALUMNI BARU (Datanya belum ada di sistem sama sekali)
+                // Ambil semua data biodata dari form
                 $nis        = trim($_POST['nis']        ?? '');
                 $nama       = trim($_POST['nama']       ?? '');
                 $angkatan   = trim($_POST['angkatan']   ?? '');
@@ -86,6 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $perusahaan = trim($_POST['perusahaan'] ?? '');
                 $alamat     = trim($_POST['alamat']     ?? '');
 
+                // Validasi data biodata
                 if (!$nis || !$nama || !$angkatan || !$jurusan || !$email || !$no_hp) {
                     $error = 'Harap lengkapi semua field alumni yang wajib diisi.';
                 } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -93,6 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } elseif ($angkatan < 2000 || $angkatan > date('Y')) {
                     $error = 'Tahun angkatan tidak valid.';
                 } else {
+                    // Cek apakah email sudah pernah didaftarkan
                     $stmt = mysqli_prepare($conn, "SELECT id_alumni FROM alumni WHERE email = ?");
                     mysqli_stmt_bind_param($stmt, 's', $email);
                     mysqli_stmt_execute($stmt);
@@ -102,19 +113,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (mysqli_fetch_assoc($res)) {
                         $error = 'Email ini sudah terdaftar di data alumni.';
                     } else {
+                        // Jika aman, masukkan data biodata ke tabel `alumni`
                         $stmt = mysqli_prepare($conn, "INSERT INTO alumni (nis, nama, angkatan, jurusan, email, no_hp, pekerjaan, perusahaan, alamat) VALUES (?,?,?,?,?,?,?,?,?)");
                         mysqli_stmt_bind_param($stmt, 'ssissssss', $nis, $nama, $angkatan, $jurusan, $email, $no_hp, $pekerjaan, $perusahaan, $alamat);
 
                         if (mysqli_stmt_execute($stmt)) {
+                            // Ambil ID alumni yang baru saja dibuat
                             $id_alumni = mysqli_insert_id($conn);
                             mysqli_stmt_close($stmt);
 
+                            // Lalu buatkan akun user-nya di tabel `users` (terhubung dengan id_alumni tadi)
                             $hashed = password_hash($password, PASSWORD_DEFAULT);
                             $stmt2 = mysqli_prepare($conn, "INSERT INTO users (username, password, role, id_alumni, status) VALUES (?,?,'user',?,'pending')");
                             mysqli_stmt_bind_param($stmt2, 'ssi', $username, $hashed, $id_alumni);
 
                             if (mysqli_stmt_execute($stmt2)) {
-                                $success = true;
+                                $success = true; // Pendaftaran selesai!
                             } else {
                                 $error = 'Terjadi kesalahan saat membuat akun.';
                             }

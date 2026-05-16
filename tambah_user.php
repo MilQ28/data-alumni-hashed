@@ -25,24 +25,36 @@
     'Animasi',
   ];
 
-  // Ambil alumni tanpa user
+  // ==============================================================================
+  // 1. SIAPKAN DATA UNTUK FORM (DATA ALUMNI TANPA AKUN)
+  // ==============================================================================
+  // Cari alumni yang ID-nya belum ada di tabel `users`
+  // Tujuannya agar admin bisa membuatkan akun untuk alumni yang belum punya akun
   $res = mysqli_query($conn, "SELECT a.id_alumni, a.nama, a.nis FROM alumni a WHERE NOT EXISTS (SELECT 1 FROM users u WHERE u.id_alumni=a.id_alumni) ORDER BY a.nama");
   $alumniTanpaUser = mysqli_fetch_all($res, MYSQLI_ASSOC);
 
+  // ==============================================================================
+  // 2. PROSES TAMBAH AKUN PENGGUNA
+  // ==============================================================================
   if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Ambil data form
     $username  = trim($_POST['username']  ?? '');
     $password  = trim($_POST['password']  ?? '');
     $role      = trim($_POST['role']      ?? 'user');
     $id_alumni = trim($_POST['id_alumni'] ?? '');
 
+    // Keamanan: Pastikan hanya superadmin yang bisa bikin akun admin lain
+    // Jika dia admin biasa, dia cuma boleh bikin akun 'user'
     $allowedRoles = isSuperAdmin() ? ['user', 'admin'] : ['user'];
-    if (!in_array($role, $allowedRoles)) $role = 'user';
+    if (!in_array($role, $allowedRoles)) $role = 'user'; // Paksa jadi 'user' jika melanggar
 
+    // Validasi input
     if (!$username || !$password) {
       $error = 'Username dan password wajib diisi.';
     } elseif (strlen($password) < 6) {
       $error = 'Password minimal 6 karakter.';
     } else {
+      // Cek apakah username sudah ada di database
       $s = mysqli_prepare($conn, "SELECT user_id FROM users WHERE username=?");
       mysqli_stmt_bind_param($s, 's', $username);
       mysqli_stmt_execute($s);
@@ -52,9 +64,13 @@
       if (mysqli_fetch_assoc($sres)) {
         $error = 'Username sudah digunakan.';
       } else {
+        // Enkripsi password menggunakan fungsi bawaan PHP agar aman tidak mudah dibajak
         $hashed = password_hash($password, PASSWORD_DEFAULT);
+        
+        // Ubah ID alumni jadi angka (integer), atau biarkan null jika tidak dipilih
         $alId   = ($id_alumni !== '') ? (int)$id_alumni : null;
 
+        // Masukkan data akun baru ke database. Statusnya otomatis 'approved' karena admin yang buat
         $stmt = mysqli_prepare($conn, "INSERT INTO users (username,password,role,id_alumni,status) VALUES (?,?,?,?,'approved')");
         mysqli_stmt_bind_param($stmt, 'ssss', $username, $hashed, $role, $alId);
         mysqli_stmt_execute($stmt);

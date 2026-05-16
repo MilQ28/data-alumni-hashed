@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -23,7 +23,11 @@ $jurusan_list = [
   'Animasi',
 ];
 
+// ==============================================================================
+// PROSES TAMBAH DATA ALUMNI BARU
+// ==============================================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // 1. Ambil data dari form dan bersihkan spasi yang tidak perlu dengan trim()
     $nis        = trim($_POST['nis']        ?? '');
     $nama       = trim($_POST['nama']       ?? '');
     $angkatan   = trim($_POST['angkatan']   ?? '');
@@ -34,11 +38,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $perusahaan = trim($_POST['perusahaan'] ?? '');
     $alamat     = trim($_POST['alamat']     ?? '');
 
+    // 2. Validasi input wajib (tidak boleh kosong)
     if (!$nis || !$nama || !$angkatan || !$jurusan || !$email || !$no_hp) {
         $error = 'Field wajib tidak boleh kosong.';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) { // Cek format penulisan email
         $error = 'Format email tidak valid.';
     } else {
+        // 3. Pengecekan Duplikasi Email
+        // Cek apakah email yang dimasukkan sudah ada di tabel alumni
         $s = mysqli_prepare($conn, "SELECT id_alumni FROM alumni WHERE email=?");
         mysqli_stmt_bind_param($s, 's', $email);
         mysqli_stmt_execute($s);
@@ -46,12 +53,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_close($s);
 
         if (mysqli_fetch_assoc($sres)) {
+            // Jika mysqli_fetch_assoc mengembalikan data, berarti email sudah ada!
             $error = 'Email sudah terdaftar.';
         } else {
+            // 4. Proses Simpan Data
+            // Jika email belum ada, kita bisa simpan data ke database
             $stmt = mysqli_prepare($conn, "INSERT INTO alumni (nis,nama,angkatan,jurusan,email,no_hp,pekerjaan,perusahaan,alamat) VALUES (?,?,?,?,?,?,?,?,?)");
+            // 'ssissssss' artinya: string, string, integer, string, string, string, string, string, string
             mysqli_stmt_bind_param($stmt, 'ssissssss', $nis, $nama, $angkatan, $jurusan, $email, $no_hp, $pekerjaan, $perusahaan, $alamat);
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
+            
             $success = 'Data alumni berhasil ditambahkan.';
         }
     }
