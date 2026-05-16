@@ -74,7 +74,6 @@ Letakkan folder di `htdocs` (XAMPP) atau `www` (Laragon), lalu jalankan:
 git clone https://github.com/MilQ28/data-alumni-hashed.git
 cd data-alumni-hashed
 php -S localhost:8000 (jika di luar folder htdocs)
-
 ```
 lalu buka browser
 ```
