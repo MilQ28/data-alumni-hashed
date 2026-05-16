@@ -17,6 +17,7 @@ if (isset($_SESSION['user_id'])) {
 }
 
 require 'koneksi.php';
+$conn = mysqli_connect($host, $username, $password, $dbname);
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

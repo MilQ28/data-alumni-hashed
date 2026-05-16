@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -38,6 +38,13 @@ $recentAlumni = mysqli_fetch_all($res, MYSQLI_ASSOC);
 // Pending users
 $res = mysqli_query($conn, "SELECT u.*, a.nama, a.nis, a.jurusan, a.angkatan FROM users u LEFT JOIN alumni a ON u.id_alumni=a.id_alumni WHERE u.status='pending' ORDER BY u.created_at DESC");
 $pendingUsers = mysqli_fetch_all($res, MYSQLI_ASSOC);
+
+// Alumni Belum Terdaftar
+$resBelum = mysqli_query($conn, "SELECT COUNT(*) FROM alumni a LEFT JOIN users u ON a.id_alumni = u.id_alumni WHERE u.id_alumni IS NULL");
+$totalBelumTerdaftar = mysqli_fetch_row($resBelum)[0];
+
+$resDataBelum = mysqli_query($conn, "SELECT a.id_alumni, a.nis, a.nama, a.jurusan, a.angkatan FROM alumni a LEFT JOIN users u ON a.id_alumni = u.id_alumni WHERE u.id_alumni IS NULL ORDER BY a.nama ASC LIMIT 5");
+$alumniBelumTerdaftar = mysqli_fetch_all($resDataBelum, MYSQLI_ASSOC);
 ?>
 
 <div class="page-wrapper">
@@ -139,6 +146,50 @@ $pendingUsers = mysqli_fetch_all($res, MYSQLI_ASSOC);
                 <a href="delete_user.php?action=reject&id=<?= $pu['user_id'] ?>" class="btn-sm btn-danger" onclick="return confirm('Tolak pendaftaran ini?')">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   Tolak
+                </a>
+              </div>
+            </td>
+          </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <?php endif; ?>
+
+  <?php if ($totalBelumTerdaftar > 0): ?>
+  <!-- Alumni Belum Punya Akun -->
+  <div class="section-card">
+    <div class="section-head">
+      <h2>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+        </svg>
+        Alumni Belum Memiliki Akun
+        <span class="badge badge-amber"><?= $totalBelumTerdaftar ?></span>
+      </h2>
+      <a href="alumni_tanpa_akun.php" class="btn-outline-sm">Lihat Semua</a>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>NIS</th><th>Nama</th><th>Jurusan</th><th>Angkatan</th><th>Status</th><th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($alumniBelumTerdaftar as $abt): ?>
+          <tr>
+            <td><code><?= htmlspecialchars($abt['nis'] ?? '-') ?></code></td>
+            <td><?= htmlspecialchars($abt['nama'] ?? '-') ?></td>
+            <td><span class="tag"><?= htmlspecialchars($abt['jurusan'] ?? '-') ?></span></td>
+            <td><?= htmlspecialchars($abt['angkatan'] ?? '-') ?></td>
+            <td><span class="badge badge-amber">Belum Terdaftar</span></td>
+            <td>
+              <div class="action-btns">
+                <a href="tambah_user.php?id_alumni=<?= $abt['id_alumni'] ?>" class="btn-sm btn-primary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                  Buatkan Akun
                 </a>
               </div>
             </td>
